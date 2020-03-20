@@ -1,0 +1,51 @@
+plugins {
+  id 'java'
+  id 'maven-publish'
+}
+
+group 'net.gegy1000'
+version '0.1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  compile 'com.google.code.findbugs:jsr305:3.0.2'
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+  classifier = 'sources'
+  from sourceSets.main.allSource
+}
+
+artifacts {
+  archives sourcesJar
+}
+
+publishing {
+  publications {
+    mavenJava(MavenPublication) {
+      groupId "net.gegy1000"
+      artifactId "just-now"
+      version project.version
+
+      from components.java
+
+      artifact sourcesJar {
+        classifier "sources"
+      }
+    }
+  }
+  repositories {
+    maven {
+      credentials {
+        username project.mavenUsername ?: ""
+        password project.mavenPassword ?: ""
+      }
+      url project.mavenUrl ?: ""
+    }
+  }
+}
