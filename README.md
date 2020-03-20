@@ -41,3 +41,8 @@ public static void main(String[] args) {
     System.out.println(greeting);
 }
 ```
+
+#### Roadmap
+ - [ ] Documentation
+ - [ ] Better standards & combinators for error handling
+ - [ ] Async timers
