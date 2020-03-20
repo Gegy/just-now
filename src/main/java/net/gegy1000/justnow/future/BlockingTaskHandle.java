@@ -31,6 +31,8 @@ public final class BlockingTaskHandle<T> implements Future<T> {
     }
 
     synchronized void complete(T result) {
+        if (result == null) throw new IllegalArgumentException("result cannot be null");
+
         this.result = result;
         if (this.waker != null) {
             this.waker.wake();
