@@ -31,7 +31,7 @@ import java.util.stream.Stream;
  * This is solved by the {@link Waker} interface: when a future is polled, if it does not return a result, it should
  * register the waker internally. When the future's result is ready, {@link Waker#wake()} should be called. If it is not
  * called, the future will not be polled again.
- * @see BlockingTaskHandle for a reference implementation of how to use wakers
+ * @see JoinHandle for a reference implementation of how to use wakers
  *
  * While it is possible to write a polling handler that does block, caution should be taken to avoid this as it can
  * create unexpected inefficiency in execution by preventing futures from being run concurrently.
@@ -68,7 +68,7 @@ public interface Future<T> {
      * Spawns a blocking task onto the given executor. The task is <b>not</b> allowed to return a null value, if it must
      * return an optional value, use {@link java.util.Optional}.
      *
-     * Returns a {@link BlockingTaskHandle} future which can be used to track the result of the task.
+     * Returns a {@link JoinHandle} future which can be used to track the result of the task.
      * <b>NB</b>: the handle is not attached to the execution of the task: it does not need to be polled in order for
      * the task to be executed.
      *
@@ -81,12 +81,12 @@ public interface Future<T> {
      *
      * @return the handle for this task's execution
      */
-    static <T> BlockingTaskHandle<T> spawnBlocking(Executor executor, Supplier<T> supplier) {
-        BlockingTaskHandle<T> handle = new BlockingTaskHandle<>();
+    static <T> JoinHandle<T> spawnBlocking(Executor executor, Supplier<T> supplier) {
+        JoinHandle<T> handle = new JoinHandle<>();
         executor.execute(() -> {
             handle.setExecutingThread(Thread.currentThread());
             T result = supplier.get();
-            handle.complete(result);
+            handle.completeOk(result);
         });
         return handle;
     }

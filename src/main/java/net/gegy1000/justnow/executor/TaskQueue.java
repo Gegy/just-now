@@ -1,7 +1,7 @@
 package net.gegy1000.justnow.executor;
 
+import java.util.Iterator;
 import java.util.concurrent.LinkedBlockingDeque;
-import java.util.stream.Stream;
 
 public final class TaskQueue {
     private final LinkedBlockingDeque<Task<?>> tasks = new LinkedBlockingDeque<>();
@@ -23,11 +23,39 @@ public final class TaskQueue {
         return this.tasks.take();
     }
 
-    public Stream<Task<?>> drain() {
-        Stream.Builder<Task<?>> builder = Stream.builder();
-        while (!this.tasks.isEmpty()) {
-            builder.accept(this.tasks.remove());
+    public Iterable<Task<?>> drain() {
+        return () -> new Iterator<Task<?>>() {
+            @Override
+            public boolean hasNext() {
+                return !TaskQueue.this.tasks.isEmpty();
+            }
+
+            @Override
+            public Task<?> next() {
+                return TaskQueue.this.tasks.remove();
+            }
+        };
+    }
+
+    public Waker waker(Task task) {
+        return new Waker(task);
+    }
+
+    public class Waker implements net.gegy1000.justnow.Waker {
+        private final Task<?> task;
+        boolean awoken;
+
+        private Waker(Task<?> task) {
+            this.task = task;
         }
-        return builder.build();
+
+        void reset() {
+            this.awoken = false;
+        }
+
+        @Override
+        public void wake() {
+            TaskQueue.this.enqueue(this.task);
+        }
     }
 }

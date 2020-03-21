@@ -1,6 +1,5 @@
 package net.gegy1000.justnow.executor;
 
-import net.gegy1000.justnow.Waker;
 import net.gegy1000.justnow.future.Future;
 
 import java.util.concurrent.ThreadFactory;
@@ -22,7 +21,7 @@ public final class ThreadedExecutor implements AutoCloseable {
     }
 
     public <T> TaskHandle<T> spawn(Future<T> future) {
-        Task<T> task = new Task<>(future, EnqueuingWaker::new);
+        Task<T> task = new Task<>(future, this.taskQueue);
         this.taskQueue.enqueue(task);
         return task.handle;
     }
@@ -56,7 +55,7 @@ public final class ThreadedExecutor implements AutoCloseable {
             try {
                 while (ThreadedExecutor.this.active) {
                     Task<?> task = ThreadedExecutor.this.taskQueue.take();
-                    ((EnqueuingWaker) task.waker).reset();
+                    task.waker.reset();
                     task.advance();
                 }
             } catch (InterruptedException e) {
@@ -65,21 +64,5 @@ public final class ThreadedExecutor implements AutoCloseable {
         }
     }
 
-    private class EnqueuingWaker implements Waker {
-        private final Task<?> task;
-        boolean awoken;
 
-        private EnqueuingWaker(Task<?> task) {
-            this.task = task;
-        }
-
-        void reset() {
-            this.awoken = false;
-        }
-
-        @Override
-        public void wake() {
-            ThreadedExecutor.this.taskQueue.enqueue(this.task);
-        }
-    }
 }

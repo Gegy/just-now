@@ -1,32 +1,23 @@
 package net.gegy1000.justnow.executor;
 
-import net.gegy1000.justnow.Waker;
 import net.gegy1000.justnow.future.Future;
+import net.gegy1000.justnow.future.JoinHandle;
 
-import javax.annotation.Nullable;
-
-public final class TaskHandle<T> implements Future<T> {
+public final class TaskHandle<T> extends JoinHandle<T> {
     final Task<T> task;
-
-    private T result;
-    private Waker waker;
 
     TaskHandle(Task<T> task) {
         this.task = task;
     }
 
-    @Nullable
     @Override
-    public T poll(Waker waker) {
-        this.waker = waker;
-        return this.result;
+    protected synchronized void completeOk(T result) {
+        super.completeOk(result);
     }
 
-    void complete(T result) {
-        this.result = result;
-        if (this.waker != null) {
-            this.waker.wake();
-        }
+    @Override
+    protected synchronized void completeErr(Throwable exception) {
+        super.completeErr(exception);
     }
 
     Future<T> steal() {

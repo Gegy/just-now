@@ -1,21 +1,18 @@
 package net.gegy1000.justnow.executor;
 
-import net.gegy1000.justnow.Waker;
 import net.gegy1000.justnow.future.Future;
-
-import java.util.function.Function;
 
 final class Task<T> {
     final Future<T> future;
-    final Waker waker;
+    final TaskQueue.Waker waker;
 
     boolean invalidated;
     TaskHandle<T> handle;
 
-    Task(Future<T> future, Function<Task<T>, Waker> waker) {
+    Task(Future<T> future, TaskQueue taskQueue) {
         this.future = future;
         this.handle = new TaskHandle<>(this);
-        this.waker = waker.apply(this);
+        this.waker = taskQueue.waker(this);
     }
 
     void advance() {
@@ -23,10 +20,15 @@ final class Task<T> {
             throw new IllegalStateException("task invalid");
         }
 
-        T result = this.future.poll(this.waker);
-        if (result != null) {
+        try {
+            T result = this.future.poll(this.waker);
+            if (result != null) {
+                this.invalidated = true;
+                this.handle.completeOk(result);
+            }
+        } catch (Throwable exception) {
             this.invalidated = true;
-            this.handle.complete(result);
+            this.handle.completeErr(exception);
         }
     }
 }
