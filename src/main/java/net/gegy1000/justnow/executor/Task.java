@@ -15,15 +15,15 @@ final class Task<T> {
         this.waker = taskQueue.waker(this);
     }
 
-    synchronized void invalidate() {
+    void invalidate() {
         this.invalidated = true;
     }
 
-    synchronized boolean isInvalid() {
+    boolean isInvalid() {
         return this.invalidated;
     }
 
-    synchronized void advance() {
+    void advance() {
         if (this.invalidated) {
             throw new IllegalStateException("task invalid");
         }
