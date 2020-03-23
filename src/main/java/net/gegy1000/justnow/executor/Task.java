@@ -2,12 +2,15 @@ package net.gegy1000.justnow.executor;
 
 import net.gegy1000.justnow.future.Future;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 final class Task<T> {
     final Future<T> future;
     final TaskQueue.Waker waker;
 
-    private boolean invalidated;
     TaskHandle<T> handle;
+
+    private final AtomicBoolean invalidated = new AtomicBoolean(false);
 
     Task(Future<T> future, TaskQueue taskQueue) {
         this.future = future;
@@ -16,26 +19,26 @@ final class Task<T> {
     }
 
     void invalidate() {
-        this.invalidated = true;
+        this.invalidated.set(true);
     }
 
     boolean isInvalid() {
-        return this.invalidated;
+        return this.invalidated.get();
     }
 
     void advance() {
-        if (this.invalidated) {
+        if (this.invalidated.get()) {
             throw new IllegalStateException("task invalid");
         }
 
         try {
             T result = this.future.poll(this.waker);
             if (result != null) {
-                this.invalidated = true;
+                this.invalidate();
                 this.handle.completeOk(result);
             }
         } catch (Throwable exception) {
-            this.invalidated = true;
+            this.invalidate();
             this.handle.completeErr(exception);
         }
     }

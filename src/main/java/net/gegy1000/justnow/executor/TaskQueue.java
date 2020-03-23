@@ -1,6 +1,6 @@
 package net.gegy1000.justnow.executor;
 
-import java.util.Iterator;
+import java.util.Collection;
 import java.util.concurrent.LinkedBlockingDeque;
 
 public final class TaskQueue {
@@ -23,18 +23,10 @@ public final class TaskQueue {
         return this.tasks.take();
     }
 
-    public Iterable<Task<?>> drain() {
-        return () -> new Iterator<Task<?>>() {
-            @Override
-            public boolean hasNext() {
-                return !TaskQueue.this.tasks.isEmpty();
-            }
-
-            @Override
-            public Task<?> next() {
-                return TaskQueue.this.tasks.remove();
-            }
-        };
+    public void drainTo(Collection<Task<?>> target) {
+        while (!this.tasks.isEmpty()) {
+            target.add(this.tasks.remove());
+        }
     }
 
     public Waker waker(Task task) {

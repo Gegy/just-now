@@ -2,8 +2,12 @@ package net.gegy1000.justnow.executor;
 
 import net.gegy1000.justnow.future.Future;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 public final class LocalExecutor {
     private final TaskQueue taskQueue = new TaskQueue();
+    private final Collection<Task<?>> drainBuffer = new ArrayList<>();
 
     public <T> TaskHandle<T> spawn(Future<T> future) {
         Task<T> task = new Task<>(future, this.taskQueue);
@@ -29,7 +33,10 @@ public final class LocalExecutor {
     }
 
     public void advanceAll() {
-        for (Task<?> task : this.taskQueue.drain()) {
+        this.drainBuffer.clear();
+        this.taskQueue.drainTo(this.drainBuffer);
+
+        for (Task<?> task : this.drainBuffer) {
             task.waker.reset();
             task.advance();
         }
