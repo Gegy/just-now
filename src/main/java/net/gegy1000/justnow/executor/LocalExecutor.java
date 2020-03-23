@@ -27,7 +27,6 @@ public final class LocalExecutor {
     public void run() throws InterruptedException {
         while (true) {
             Task<?> task = this.taskQueue.take();
-            task.waker.reset();
             task.advance();
         }
     }
@@ -37,7 +36,6 @@ public final class LocalExecutor {
         this.taskQueue.drainTo(this.drainBuffer);
 
         for (Task<?> task : this.drainBuffer) {
-            task.waker.reset();
             task.advance();
         }
     }

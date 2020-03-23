@@ -35,20 +35,16 @@ public final class TaskQueue {
 
     public class Waker implements net.gegy1000.justnow.Waker {
         private final Task<?> task;
-        boolean awoken;
+        boolean ready;
 
         private Waker(Task<?> task) {
             this.task = task;
         }
 
-        synchronized void reset() {
-            this.awoken = false;
-        }
-
         @Override
         public synchronized void wake() {
-            if (!this.awoken) {
-                this.awoken = true;
+            if (this.ready) {
+                this.ready = false;
                 TaskQueue.this.enqueue(this.task);
             }
         }

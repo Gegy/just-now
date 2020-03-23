@@ -27,12 +27,17 @@ final class Task<T> {
     }
 
     void advance() {
-        if (this.invalidated.get()) {
-            throw new IllegalStateException("task invalid");
-        }
+        if (this.isInvalid()) return;
 
         try {
-            T result = this.future.poll(this.waker);
+            T result;
+            synchronized (this.waker) {
+                result = this.future.poll(this.waker);
+                if (result == null) {
+                    this.waker.ready = true;
+                }
+            }
+
             if (result != null) {
                 this.invalidate();
                 this.handle.completeOk(result);

@@ -55,7 +55,6 @@ public final class ThreadedExecutor implements AutoCloseable {
             try {
                 while (ThreadedExecutor.this.active) {
                     Task<?> task = ThreadedExecutor.this.taskQueue.take();
-                    task.waker.reset();
                     task.advance();
                 }
             } catch (InterruptedException e) {
@@ -63,6 +62,4 @@ public final class ThreadedExecutor implements AutoCloseable {
             }
         }
     }
-
-
 }
