@@ -11,7 +11,7 @@ public final class TaskQueue {
     }
 
     public void enqueue(Task<?> task) {
-        if (task.invalidated) return;
+        if (task.isInvalid()) return;
         this.tasks.add(task);
     }
 
@@ -49,13 +49,16 @@ public final class TaskQueue {
             this.task = task;
         }
 
-        void reset() {
+        synchronized void reset() {
             this.awoken = false;
         }
 
         @Override
-        public void wake() {
-            TaskQueue.this.enqueue(this.task);
+        public synchronized void wake() {
+            if (!this.awoken) {
+                this.awoken = true;
+                TaskQueue.this.enqueue(this.task);
+            }
         }
     }
 }

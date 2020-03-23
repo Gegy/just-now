@@ -6,7 +6,7 @@ final class Task<T> {
     final Future<T> future;
     final TaskQueue.Waker waker;
 
-    boolean invalidated;
+    private boolean invalidated;
     TaskHandle<T> handle;
 
     Task(Future<T> future, TaskQueue taskQueue) {
@@ -15,7 +15,15 @@ final class Task<T> {
         this.waker = taskQueue.waker(this);
     }
 
-    void advance() {
+    synchronized void invalidate() {
+        this.invalidated = true;
+    }
+
+    synchronized boolean isInvalid() {
+        return this.invalidated;
+    }
+
+    synchronized void advance() {
         if (this.invalidated) {
             throw new IllegalStateException("task invalid");
         }

@@ -21,7 +21,7 @@ public final class TaskHandle<T> extends JoinHandle<T> {
     }
 
     Future<T> steal() {
-        this.task.invalidated = true;
+        this.task.invalidate();
         if (this.result != null) {
             return Future.ready(this.result);
         }
