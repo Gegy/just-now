@@ -30,17 +30,14 @@ final class Task<T> {
         if (this.isInvalid()) return;
 
         try {
-            T result;
-            synchronized (this.waker) {
-                result = this.future.poll(this.waker);
-                if (result == null) {
-                    this.waker.ready = true;
-                }
-            }
+            this.waker.polling();
 
+            T result = this.future.poll(this.waker);
             if (result != null) {
                 this.invalidate();
                 this.handle.completeOk(result);
+            } else {
+                this.waker.ready();
             }
         } catch (Throwable exception) {
             this.invalidate();
