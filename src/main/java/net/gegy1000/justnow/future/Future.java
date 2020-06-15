@@ -114,6 +114,18 @@ public interface Future<T> {
     }
 
     /**
+     * Returns a future that lazily evaluates its result. Polling should return a ready result immediately, but the
+     * supplier will only be invoked when the future is polled.
+     *
+     * @param op the operator to lazily evaluate
+     * @param <T> the future output type
+     * @return a lazily evaluated future
+     */
+    static <T> Future<T> lazy(Supplier<T> op) {
+        return new Lazy<>(op);
+    }
+
+    /**
      * Wraps a future allowing its execution to be canceled. When this future is canceled,
      * it will yield a {@link java.util.concurrent.CancellationException} which must be handled
      *

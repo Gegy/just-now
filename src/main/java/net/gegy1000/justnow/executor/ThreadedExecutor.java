@@ -31,6 +31,14 @@ public final class ThreadedExecutor implements AutoCloseable {
         return handle.steal();
     }
 
+    public boolean cancel(TaskHandle<?> handle) {
+        if (this.taskQueue.remove(handle.task)) {
+            handle.invalidate();
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public void close() {
         this.active = false;

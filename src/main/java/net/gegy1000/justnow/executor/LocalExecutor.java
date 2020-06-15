@@ -20,8 +20,12 @@ public final class LocalExecutor {
         return handle.steal();
     }
 
-    public boolean remove(TaskHandle<?> handle) {
-        return this.taskQueue.remove(handle.task);
+    public boolean cancel(TaskHandle<?> handle) {
+        if (this.taskQueue.remove(handle.task)) {
+            handle.invalidate();
+            return true;
+        }
+        return false;
     }
 
     public void run() throws InterruptedException {

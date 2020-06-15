@@ -20,6 +20,10 @@ public final class TaskHandle<T> extends JoinHandle<T> {
         super.completeErr(exception);
     }
 
+    void invalidate() {
+        this.task.invalidate();
+    }
+
     Future<T> steal() {
         this.task.invalidate();
         if (this.result != null) {
