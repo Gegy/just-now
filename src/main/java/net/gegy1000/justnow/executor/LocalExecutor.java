@@ -35,12 +35,19 @@ public final class LocalExecutor {
         }
     }
 
-    public void advanceAll() {
+    /**
+     * Attempts to advance all enqueued tasks on this executor
+     *
+     * @return if there are still tasks remaining in the queue
+     */
+    public boolean advanceAll() {
         this.drainBuffer.clear();
         this.taskQueue.drainTo(this.drainBuffer);
 
         for (Task<?> task : this.drainBuffer) {
             task.advance();
         }
+
+        return !this.taskQueue.isEmpty();
     }
 }

@@ -30,6 +30,10 @@ public final class TaskQueue {
         }
     }
 
+    public boolean isEmpty() {
+        return this.tasks.isEmpty();
+    }
+
     public Waker waker(Task task) {
         return new Waker(task);
     }
